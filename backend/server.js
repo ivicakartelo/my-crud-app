@@ -28,12 +28,18 @@ app.get("/api/products", (req, res) => {
 });
 
 app.post("/api/products", (req, res) => {
-  const { title, price } = req.body;
+  const { title, description, price } = req.body;
 
-  const sql = "INSERT INTO products (title, price) VALUES (?, ?)";
+  // Validate required fields
+  if (!title || !price) {
+    return res.status(400).json({ error: "Title and price are required" });
+  }
 
-  db.query(sql, [title, price], (err, result) => {
+  const sql = "INSERT INTO products (title, description, price) VALUES (?, ?, ?)";
+
+  db.query(sql, [title, description || "", parseFloat(price)], (err, result) => {
     if (err) {
+      console.error("SQL error:", err);
       return res.status(500).json({ error: err.message });
     }
     res.json({ message: "Product created", id: result.insertId });

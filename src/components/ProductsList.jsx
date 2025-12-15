@@ -1,16 +1,14 @@
 import React, { useState, useEffect } from "react";
 
 const ProductsList = () => {
-
   const [products, setProducts] = useState([]);
-  
-  useEffect(() => {
-  fetch("http://localhost:5000/api/products")
-    .then((res) => res.json())
-    .then((data) => setProducts(data))
-    .catch((err) => console.error(err));
-}, []);
 
+  useEffect(() => {
+    fetch("http://localhost:5000/api/products")
+      .then((res) => res.json())
+      .then((data) => setProducts(data))
+      .catch((err) => console.error(err));
+  }, []);
 
   return (
     <div>
@@ -20,6 +18,7 @@ const ProductsList = () => {
           <tr>
             <th>ID</th>
             <th>Title</th>
+            <th>Description</th>
             <th>Price ($)</th>
             <th>Created At</th>
             <th>Actions</th>
@@ -30,10 +29,12 @@ const ProductsList = () => {
             <tr key={p.id}>
               <td>{p.id}</td>
               <td>{p.title}</td>
+              <td>{p.description}</td>
               <td>{p.price}</td>
               <td>{p.created_at}</td>
               <td>
-                <button>Edit</button> <button>Delete</button>
+                <button>Edit</button>
+                <button>Delete</button>
               </td>
             </tr>
           ))}

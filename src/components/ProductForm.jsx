@@ -2,56 +2,78 @@ import { useState } from "react";
 
 export default function ProductForm({ onProductCreated }) {
   const [title, setTitle] = useState("");
+  const [description, setDescription] = useState("");
   const [price, setPrice] = useState("");
 
-  const handleSubmit = (e) => {
+  const handleSubmit = async (e) => {
     e.preventDefault();
 
-    const newProduct = {
-      title,
-      price
-    };
+    // Basic validation
+    if (!title || !price) {
+      alert("Title and Price are required!");
+      return;
+    }
 
-    fetch("http://localhost:5000/api/products", {
-      method: "POST",
-      headers: {
-        "Content-Type": "application/json"
-      },
-      body: JSON.stringify(newProduct)
-    })
-      .then(res => res.json())
-      .then(() => {
-        setTitle("");
-        setPrice("");
+    try {
+      console.log("Submitting product:", { title, description, price });
+
+      const response = await fetch("http://localhost:5000/api/products", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ title, description, price: parseFloat(price) })
+      });
+
+      if (!response.ok) {
+        const errData = await response.json();
+        console.error("Server error:", errData);
+        alert("Failed to create product: " + (errData.error || "Unknown error"));
+        return;
+      }
+
+      const data = await response.json();
+      console.log("Product created:", data);
+
+      // Clear form
+      setTitle("");
+      setDescription("");
+      setPrice("");
+
+      // Notify parent to refresh list
+      if (typeof onProductCreated === "function") {
+        console.log("Calling onProductCreated callback...");
         onProductCreated();
-      })
-      .catch(err => console.error(err));
+      }
+
+    } catch (err) {
+      console.error("Fetch error:", err);
+      alert("Network error, see console");
+    }
   };
 
   return (
-    <form onSubmit={handleSubmit}>
+    <form onSubmit={handleSubmit} style={{ marginBottom: "20px" }}>
       <h2>Add Product</h2>
-
-      <div>
-        <label>Title:</label><br />
-        <input
-          value={title}
-          onChange={(e) => setTitle(e.target.value)}
-          required
-        />
-      </div>
-
-      <div>
-        <label>Price:</label><br />
-        <input
-          type="number"
-          step="0.01"
-          value={price}
-          onChange={(e) => setPrice(e.target.value)}
-          required
-        />
-      </div>
-
+      <input
+        type="text"
+        value={title}
+        onChange={(e) => setTitle(e.target.value)}
+        placeholder="Title"
+        required
+      />
+      <input
+        type="text"
+        value={description}
+        onChange={(e) => setDescription(e.target.value)}
+        placeholder="Description"
+      />
+      <input
+        type="number"
+        step="0.01"
+        value={price}
+        onChange={(e) => setPrice(e.target.value)}
+        placeholder="Price"
+        required
+      />
       <button type="submit">Create</button>
     </form>
   );
