@@ -1,14 +1,16 @@
 import React, { useState, useEffect } from "react";
 
 const ProductsList = () => {
-  // Mock data for now
-  const [products, setProducts] = useState([
-    { id: 1, title: "Laptop Basic", price: 499.99, created_at: "2025-12-10 12:00:00" },
-    { id: 2, title: "Smartphone X", price: 799.0, created_at: "2025-12-10 12:10:00" },
-    { id: 3, title: "Bluetooth Headphones", price: 129.5, created_at: "2025-12-10 12:20:00" },
-    { id: 4, title: "Gaming Keyboard", price: 69.9, created_at: "2025-12-10 12:30:00" },
-    { id: 5, title: "Office Chair", price: 149.0, created_at: "2025-12-10 12:40:00" },
-  ]);
+
+  const [products, setProducts] = useState([]);
+  
+  useEffect(() => {
+  fetch("http://localhost:5000/api/products")
+    .then((res) => res.json())
+    .then((data) => setProducts(data))
+    .catch((err) => console.error(err));
+}, []);
+
 
   return (
     <div>
