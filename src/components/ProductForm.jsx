@@ -1,6 +1,6 @@
 import { useState } from "react";
 
-export default function ProductForm({ onProductCreated }) {
+export default function ProductForm() {
   const [title, setTitle] = useState("");
   const [description, setDescription] = useState("");
   const [price, setPrice] = useState("");
@@ -8,44 +8,21 @@ export default function ProductForm({ onProductCreated }) {
   const handleSubmit = async (e) => {
     e.preventDefault();
 
-    // Basic validation
-    if (!title || !price) {
-      alert("Title and Price are required!");
-      return;
-    }
-
     try {
-      console.log("Submitting product:", { title, description, price });
-
-      const response = await fetch("http://localhost:5000/api/products", {
+      // Send POST request to backend
+      await fetch("http://localhost:5000/api/products", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ title, description, price: parseFloat(price) })
+        body: JSON.stringify({ title, description, price: parseFloat(price) }),
       });
-
-      if (!response.ok) {
-        const errData = await response.json();
-        console.error("Server error:", errData);
-        alert("Failed to create product: " + (errData.error || "Unknown error"));
-        return;
-      }
-
-      const data = await response.json();
-      console.log("Product created:", data);
 
       // Clear form
       setTitle("");
       setDescription("");
       setPrice("");
 
-      // Notify parent to refresh list
-      if (typeof onProductCreated === "function") {
-        console.log("Calling onProductCreated callback...");
-        onProductCreated();
-      }
-
     } catch (err) {
-      console.error("Fetch error:", err);
+      console.error("Network error:", err);
       alert("Network error, see console");
     }
   };

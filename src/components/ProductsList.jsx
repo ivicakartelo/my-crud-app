@@ -1,45 +1,48 @@
-import React, { useState, useEffect } from "react";
+import { useState, useEffect } from "react";
 
 const ProductsList = () => {
   const [products, setProducts] = useState([]);
 
-  useEffect(() => {
+  const loadProducts = () => {
     fetch("http://localhost:5000/api/products")
       .then((res) => res.json())
       .then((data) => setProducts(data))
       .catch((err) => console.error(err));
+  };
+
+  useEffect(() => {
+    loadProducts();
   }, []);
+
+  const updateProduct = async (product) => {
+    const newTitle = prompt("New title:", product.title);
+    const newPrice = prompt("New price:", product.price);
+
+    if (!newTitle || !newPrice) return;
+
+    await fetch(`http://localhost:5000/api/products/${product.id}`, {
+      method: "PUT",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({
+        title: newTitle,
+        price: parseFloat(newPrice),
+      }),
+    });
+
+    loadProducts(); // refresh list
+  };
 
   return (
     <div>
       <h2>Products List</h2>
-      <table border="1" cellPadding="5">
-        <thead>
-          <tr>
-            <th>ID</th>
-            <th>Title</th>
-            <th>Description</th>
-            <th>Price ($)</th>
-            <th>Created At</th>
-            <th>Actions</th>
-          </tr>
-        </thead>
-        <tbody>
-          {products.map((p) => (
-            <tr key={p.id}>
-              <td>{p.id}</td>
-              <td>{p.title}</td>
-              <td>{p.description}</td>
-              <td>{p.price}</td>
-              <td>{p.created_at}</td>
-              <td>
-                <button>Edit</button>
-                <button>Delete</button>
-              </td>
-            </tr>
-          ))}
-        </tbody>
-      </table>
+      <ul>
+        {products.map((p) => (
+          <li key={p.id}>
+            {p.title} - ${p.price}{" "}
+            <button onClick={() => updateProduct(p)}>Edit</button>
+          </li>
+        ))}
+      </ul>
     </div>
   );
 };

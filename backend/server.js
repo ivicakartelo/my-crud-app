@@ -9,8 +9,8 @@ app.use(express.json());
 // MySQL connection
 const db = mysql.createConnection({
   host: "localhost",
-  user: "root",       // your MySQL user
-  password: "",       // your MySQL password
+  user: "root",
+  password: "",
   database: "shop"
 });
 
@@ -27,22 +27,30 @@ app.get("/api/products", (req, res) => {
   });
 });
 
+// CREATE product (no validation)
 app.post("/api/products", (req, res) => {
   const { title, description, price } = req.body;
 
-  // Validate required fields
-  if (!title || !price) {
-    return res.status(400).json({ error: "Title and price are required" });
-  }
+  const sql =
+    "INSERT INTO products (title, description, price) VALUES (?, ?, ?)";
 
-  const sql = "INSERT INTO products (title, description, price) VALUES (?, ?, ?)";
-
-  db.query(sql, [title, description || "", parseFloat(price)], (err, result) => {
-    if (err) {
-      console.error("SQL error:", err);
-      return res.status(500).json({ error: err.message });
-    }
+  db.query(sql, [title, description, price], (err, result) => {
+    if (err) return res.status(500).json({ error: err.message });
     res.json({ message: "Product created", id: result.insertId });
+  });
+});
+
+// UPDATE product (no validation)
+app.put("/api/products/:id", (req, res) => {
+  const { title, price } = req.body;
+  const { id } = req.params;
+
+  const sql =
+    "UPDATE products SET title = ?, price = ? WHERE id = ?";
+
+  db.query(sql, [title, price, id], (err) => {
+    if (err) return res.status(500).json({ error: err.message });
+    res.json({ message: "Product updated" });
   });
 });
 
