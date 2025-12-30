@@ -58,7 +58,7 @@ app.put("/api/products/:id", (req, res) => {
 app.delete("/api/products/:id", (req, res) => {
   db.query(
     "DELETE FROM products WHERE id = ?",
-    [req.params.idv],
+    [req.params.id],
     () => res.sendStatus(204)
   );
 });
