@@ -29,6 +29,16 @@ const ProductsList = () => {
       }),
     });
 
+    loadProducts();
+  };
+
+  const deleteProduct = async (id) => {
+    if (!window.confirm("Delete this product?")) return;
+
+    await fetch(`http://localhost:5000/api/products/${id}`, {
+      method: "DELETE",
+    });
+
     loadProducts(); // refresh list
   };
 
@@ -39,7 +49,8 @@ const ProductsList = () => {
         {products.map((p) => (
           <li key={p.id}>
             {p.title} - ${p.price}{" "}
-            <button onClick={() => updateProduct(p)}>Edit</button>
+            <button onClick={() => updateProduct(p)}>Edit</button>{" "}
+            <button onClick={() => deleteProduct(p.id)}>Delete</button>
           </li>
         ))}
       </ul>

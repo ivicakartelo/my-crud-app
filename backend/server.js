@@ -54,6 +54,15 @@ app.put("/api/products/:id", (req, res) => {
   });
 });
 
+// DELETE product
+app.delete("/api/products/:id", (req, res) => {
+  db.query(
+    "DELETE FROM products WHERE id = ?",
+    [req.params.idv],
+    () => res.sendStatus(204)
+  );
+});
+
 // Start server
 const PORT = 5000;
 app.listen(PORT, () => {
