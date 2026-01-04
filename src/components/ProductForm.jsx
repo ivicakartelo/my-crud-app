@@ -1,6 +1,6 @@
 import { useState } from "react";
 
-export default function ProductForm() {
+export default function ProductForm({ setProducts, products }) {
   const [title, setTitle] = useState("");
   const [description, setDescription] = useState("");
   const [price, setPrice] = useState("");
@@ -9,20 +9,21 @@ export default function ProductForm() {
     e.preventDefault();
 
     try {
-      // Send POST request to backend
-      await fetch("http://localhost:5000/api/products", {
+      const res = await fetch("http://localhost:5000/api/products", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ title, description, price: parseFloat(price) }),
       });
+      const newProduct = await res.json();
 
-      // Clear form
+      // Update local state without refetching
+      setProducts([...products, { id: newProduct.id, title, description, price: parseFloat(price) }]);
+
       setTitle("");
       setDescription("");
       setPrice("");
-
     } catch (err) {
-      console.error("Network error:", err);
+      console.error(err);
       alert("Network error, see console");
     }
   };

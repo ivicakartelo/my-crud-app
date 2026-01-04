@@ -1,19 +1,4 @@
-import { useState, useEffect } from "react";
-
-const ProductsList = () => {
-  const [products, setProducts] = useState([]);
-
-  const loadProducts = () => {
-    fetch("http://localhost:5000/api/products")
-      .then((res) => res.json())
-      .then((data) => setProducts(data))
-      .catch((err) => console.error(err));
-  };
-
-  useEffect(() => {
-    loadProducts();
-  }, []);
-
+export default function ProductsList({ products, setProducts }) {
   const updateProduct = async (product) => {
     const newTitle = prompt("New title:", product.title);
     const newPrice = prompt("New price:", product.price);
@@ -26,20 +11,25 @@ const ProductsList = () => {
       body: JSON.stringify({
         title: newTitle,
         price: parseFloat(newPrice),
+        description: product.description, // keep description same
       }),
     });
 
-    loadProducts();
+    // Update state locally without reloading all
+    setProducts(
+      products.map((p) =>
+        p.id === product.id ? { ...p, title: newTitle, price: parseFloat(newPrice) } : p
+      )
+    );
   };
 
   const deleteProduct = async (id) => {
     if (!window.confirm("Delete this product?")) return;
 
-    await fetch(`http://localhost:5000/api/products/${id}`, {
-      method: "DELETE",
-    });
+    await fetch(`http://localhost:5000/api/products/${id}`, { method: "DELETE" });
 
-    loadProducts(); // refresh list
+    // Remove from local state
+    setProducts(products.filter((p) => p.id !== id));
   };
 
   return (
@@ -47,15 +37,13 @@ const ProductsList = () => {
       <h2>Products List</h2>
       <ul>
         {products.map((p) => (
-          <li key={p.id}>
-            {p.title} - ${p.price}{" "}
-            <button onClick={() => updateProduct(p)}>Edit</button>{" "}
-            <button onClick={() => deleteProduct(p.id)}>Delete</button>
-          </li>
-        ))}
+  <li key={p.id}>
+    {p.title} - ${Number(p.price).toFixed(2)}{" "}
+    <button onClick={() => updateProduct(p)}>Edit</button>{" "}
+    <button onClick={() => deleteProduct(p.id)}>Delete</button>
+  </li>
+      ))}
       </ul>
     </div>
   );
-};
-
-export default ProductsList;
+}

@@ -1,5 +1,5 @@
 import express from "express";
-import mysql from "mysql2";
+import mysql from "mysql2/promise";
 import cors from "cors";
 
 const app = express();
@@ -7,64 +7,80 @@ app.use(cors());
 app.use(express.json());
 
 // MySQL connection
-const db = mysql.createConnection({
+const db = await mysql.createConnection({
   host: "localhost",
   user: "root",
   password: "",
-  database: "shop"
+  database: "shop",
 });
 
-db.connect((err) => {
-  if (err) throw err;
-  console.log("MySQL connected");
-});
+console.log("MySQL connected");
+
+// --------------------
+// CRUD Routes
+// --------------------
 
 // GET all products
-app.get("/api/products", (req, res) => {
-  db.query("SELECT * FROM products", (err, results) => {
-    if (err) return res.status(500).json({ error: err.message });
-    res.json(results);
-  });
+app.get("/api/products", async (req, res) => {
+  try {
+    const [rows] = await db.query("SELECT * FROM products");
+    res.json(rows);
+  } catch (err) {
+    res.status(500).json({ error: err.message });
+  }
 });
 
-// CREATE product (no validation)
-app.post("/api/products", (req, res) => {
-  const { title, description, price } = req.body;
-
-  const sql =
-    "INSERT INTO products (title, description, price) VALUES (?, ?, ?)";
-
-  db.query(sql, [title, description, price], (err, result) => {
-    if (err) return res.status(500).json({ error: err.message });
-    res.json({ message: "Product created", id: result.insertId });
-  });
+// CREATE product
+app.post("/api/products", async (req, res) => {
+  tr        {
+    const { title, description, price } = req.body;
+    const [result] = await db.query(
+      "INSERT INTO products (title, description, price) VALUES (?, ?, ?)",
+      [title, description, price]
+    );
+    res.status(201).json({ message: "Product created", id: result.insertId });
+  } catch (err) {
+    res.status(500).json({ error: err.message });
+  }
 });
 
-// UPDATE product (no validation)
-app.put("/api/products/:id", (req, res) => {
-  const { title, price } = req.body;
-  const { id } = req.params;
+// UPDATE product (PUT = full update)
+app.put("/api/products/:id", async (req, res) => {
+  try {
+    const { id } = req.params;
+    const { title, price, description } = req.body;
 
-  const sql =
-    "UPDATE products SET title = ?, price = ? WHERE id = ?";
+    const [result] = await db.query(
+      "UPDATE products SET title = ?, price = ?, description = ? WHERE id = ?",
+      [title, price, description, id]
+    );
 
-  db.query(sql, [title, price, id], (err) => {
-    if (err) return res.status(500).json({ error: err.message });
+    if (result.affectedRows === 0) {
+      return res.status(404).json({ message: "Product not found" });
+    }
+
     res.json({ message: "Product updated" });
-  });
+  } catch (err) {
+    res.status(500).json({ error: err.message });
+  }
 });
 
 // DELETE product
-app.delete("/api/products/:id", (req, res) => {
-  db.query(
-    "DELETE FROM products WHERE id = ?",
-    [req.params.id],
-    () => res.sendStatus(204)
-  );
+app.delete("/api/products/:id", async (req, res) => {
+  try {
+    const { id } = req.params;
+    const [result] = await db.query("DELETE FROM products WHERE id = ?", [id]);
+
+    if (result.affectedRows === 0) {
+      return res.status(404).json({ message: "Product not found" });
+    }
+
+    res.sendStatus(204);
+  } catch (err) {
+    res.status(500).json({ error: err.message });
+  }
 });
 
 // Start server
 const PORT = 5000;
-app.listen(PORT, () => {
-  console.log(`Server running on http://localhost:${PORT}`);
-});
+app.listen(PORT, () => console.log(`Server running on http://localhost:${PORT}`));
