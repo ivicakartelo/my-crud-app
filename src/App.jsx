@@ -5,7 +5,8 @@ import ProductForm from "./components/ProductForm";
 export default function App() {
   const [products, setProducts] = useState([]);
 
-  // Load products from server
+  useEffect(() => {
+    // Load products from server
   const loadProducts = async () => {
     try {
       const res = await fetch("http://localhost:5000/api/products");
@@ -15,8 +16,6 @@ export default function App() {
       console.error(err);
     }
   };
-
-  useEffect(() => {
     loadProducts();
   }, []);
 

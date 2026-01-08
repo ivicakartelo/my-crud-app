@@ -11,7 +11,7 @@ const db = await mysql.createConnection({
   host: "localhost",
   user: "root",
   password: "",
-  database: "shop",
+  database: "crud",
 });
 
 console.log("MySQL connected");
@@ -32,7 +32,7 @@ app.get("/api/products", async (req, res) => {
 
 // CREATE product
 app.post("/api/products", async (req, res) => {
-  tr        {
+  try {
     const { title, description, price } = req.body;
     const [result] = await db.query(
       "INSERT INTO products (title, description, price) VALUES (?, ?, ?)",
@@ -59,7 +59,7 @@ app.put("/api/products/:id", async (req, res) => {
       return res.status(404).json({ message: "Product not found" });
     }
 
-    res.json({ message: "Product updated" });
+    res.sendStatus(204);
   } catch (err) {
     res.status(500).json({ error: err.message });
   }

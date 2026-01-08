@@ -1,6 +1,6 @@
 -- 1. Create database
-CREATE DATABASE IF NOT EXISTS shop;
-USE shop;
+CREATE DATABASE IF NOT EXISTS crud;
+USE crud;
 
 -- 2. Create products table
 CREATE TABLE products (
